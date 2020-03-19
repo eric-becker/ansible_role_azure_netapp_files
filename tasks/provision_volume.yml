@@ -1,0 +1,38 @@
+---
+- name: Create anf account
+  azure_rm_netapp_account:
+    resource_group: "{{ item.resource_group }}"
+    name: "{{ item.account }}"
+    location: "{{ item.location }}"
+    with_items: "{{ azure_netapp_files_volumes }}"
+    loop_control:
+      label: "{{ item.name }}"
+    register: result
+
+- name: Create anf capacity pool
+  azure_rm_netapp_capacity_pool:
+    resource_group: "{{ item.resource_group }}"
+    account_name: "{{ item.account }}"
+    name: "{{ item.pool }}"
+    location: "{{ item.location }}"
+    size: "{{ item.size }}"
+  with_items: "{{ azure_netapp_files_volumes }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: result
+
+- name: Create anf volume
+  azure_rm_netapp_volume:
+    resource_group: "{{ item.resource_group }}"
+    account_name: "{{ item.account }}"
+    pool_name: "{{ item.pool }}"
+    name: "{{ item.name }}"
+    location: "{{ item.location }}"
+    file_path: "{{ item.path }}"
+    virtual_network: "{{ item.network }}"
+    subnet_id: "{{ item.subnet }}"
+    service_level: "{{ item.service_level }}"
+  with_items: "{{ azure_netapp_files_volumes }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: result

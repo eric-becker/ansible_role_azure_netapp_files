@@ -1,0 +1,18 @@
+---
+# tasks file for azure_netapp_files
+- name: Create list of anf volumes
+  set_fact:
+    azure_netapp_files_volumes: "{{ azure_netapp_files_volumes|d([]) + [ item.value | combine({'name': item.key}, {'export_rules': [item['value']['export_rules'][1]]})] }}"
+  loop: "{{ storage_map | dict2items | json_query(query) }}"
+  loop_control:
+    label: "{{ item.key|d(omit) }}"
+  vars:
+    query: "[?value.type=='azure_netapp_files']"
+  when: 
+    - storage_map != None
+  tags: ['configure', 'provision', 'azure_netapp_files']
+
+- name: Provision anf volume
+  import_tasks: provision_volume.yml
+  when: azure_netapp_files_volumes != None
+  tags: ['configure', 'provision', 'azure_netapp_files']
